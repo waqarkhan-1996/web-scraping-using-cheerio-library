@@ -1,0 +1,39 @@
+function websitescrapingeverypage() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('SCRAPE DATA FROM WEBSITES');
+  var lr = sheet.getLastRow() + 1;
+
+  for (var page = 1; page <= 1; page++) { 
+    var url = "https://www.zameen.com/agents/Karachi-2/?page=" + page;
+    var response = UrlFetchApp.fetch(url);
+  
+    var $ = Cheerio.load(response.getContentText());
+
+    var names = $('.agent-listing-card_cardTitle__1l-0P');
+    var links = $('.agent-listing-card_cardListingItem__aX-UY');
+    var citys = $('.text-with-icon_textWithIcon__3BUeT');
+    var ratings = $('.tag_tag__rZibj');
+   
+    names.each(function(index, element) {
+      var name = $(element).text();
+      var link = $(links[index]).attr('href');
+      var city = $(citys[index]).find('div').text();
+      var rating = $(ratings[index]).find('span').text();
+
+      // Simulate click action on Call button to open the popup
+      var callButton = $('.agent-listing-card_propertyCallBtn__3E8nV').eq(index);
+      callButton.trigger('click');
+      
+      // Extract phone number from the popup
+      var popupPhoneNumber = $('.contact-popup_numberchip__24E__').eq(index).text().trim();
+      
+      Logger.log(popupPhoneNumber);
+
+      sheet.getRange(lr, 1).setValue(name);
+      sheet.getRange(lr, 2).setValue(link);
+      sheet.getRange(lr, 3).setValue(city);
+      sheet.getRange(lr, 4).setValue(rating);
+      sheet.getRange(lr, 5).setValue(popupPhoneNumber); // Set the value of the phone number in the fifth column
+      lr++;
+    });
+  }
+}
